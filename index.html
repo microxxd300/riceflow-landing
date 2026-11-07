@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RiceFlow</title>
+  <meta name="description" content="RiceFlow helps rice farmers in Panabo City pick the right rice variety for their farm and follow the DA-PhilRice PalayCheck guide from seed to harvest. Free Android app.">
+  <meta name="theme-color" content="#0F5C35">
+  <meta name="color-scheme" content="light">
+  <meta property="og:title" content="RiceFlow: the right rice for your farm">
+  <meta property="og:description" content="Free Android app for rice farmers in Panabo City: farm check, rice variety recommendations, a step-by-step planting guide and GeoRice AI.">
+  <meta property="og:image" content="https://riceflow.me/images/phone-home.webp">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #059669;
+      --green-dark: #0F5C35;
+      --green-deep: #0B4A2B;
+      --green-tint: #E8F5EF;
+      --amber: #F5A623;
+      --amber-soft: #FBD38D;
+      --amber-tint: #FEF3DC;
+      --ink: #1A1A2E;
+      --muted: #5F6672;
+      --line: #E5E7EB;
+      --bg: #F7F9F8;
+      --card: #FFFFFF;
+      --navy: #111827;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; overflow-x: clip; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    a { color: inherit; }
+    .wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 16px; }
+    @media (min-width: 720px) { .wrap { padding: 0 32px; } }
+
+    /* Header */
+    header { position: sticky; top: 0; z-index: 20; background: rgba(247,249,248,.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .bar { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; letter-spacing: -.01em; }
+    .brand img { width: 36px; height: 36px; border-radius: 10px; }
+    .links { display: none; gap: 30px; font-size: 15px; font-weight: 500; }
+    .links a { text-decoration: none; color: var(--muted); }
+    .links a:hover { color: var(--green-dark); }
+    @media (min-width: 860px) { .links { display: flex; } }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; padding: 13px 22px; font-weight: 700; font-size: 16px; text-decoration: none; transition: transform .12s ease, background .12s ease; }
+    .btn:active { transform: scale(.98); }
+    .btn svg { width: 20px; height: 20px; flex: none; }
+    .btn-green { background: var(--green-dark); color: #fff; }
+    .btn-green:hover { background: var(--green-deep); }
+    .btn-small { padding: 10px 16px; font-size: 14px; border-radius: 10px; }
+    .store { display: inline-flex; align-items: center; gap: 12px; background: var(--navy); color: #fff; text-decoration: none; border-radius: 12px; padding: 10px 20px 10px 16px; transition: background .12s ease; }
+    .store:hover { background: #000; }
+    .store svg { width: 28px; height: 28px; flex: none; }
+    .store small { display: block; font-size: 11px; opacity: .75; line-height: 1.2; }
+    .store b { display: block; font-size: 18px; line-height: 1.2; letter-spacing: -.01em; }
+    .store.light { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .store.light:hover { background: var(--green-tint); }
+
+    /* Hero */
+    .hero { text-align: center; padding: 48px 0 0; position: relative; }
+    @media (min-width: 900px) { .hero { padding-top: 64px; } }
+    .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--green-tint); color: var(--green-dark); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding: 7px 14px; border-radius: 999px; }
+    h1 { font-size: clamp(38px, 7vw, 66px); line-height: 1.05; letter-spacing: -.035em; margin: 18px auto 16px; font-weight: 800; color: var(--green-dark); max-width: 12em; }
+    .lead { font-size: 18px; color: var(--muted); max-width: 36em; margin: 0 auto 28px; }
+    .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .fine { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+
+    .stage { position: relative; overflow-x: clip; margin-top: 40px; height: clamp(340px, 60vw, 600px); }
+    .sun { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, 1040px); aspect-ratio: 2 / 1; border-radius: 1040px 1040px 0 0; background: linear-gradient(180deg, #FBCB6E 0%, var(--amber) 100%); }
+    .fan { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-end; }
+    .fan img { position: absolute; bottom: -8%; width: clamp(150px, 26vw, 270px); filter: drop-shadow(0 24px 40px rgba(11,74,43,.28)); }
+    .fan .mid { z-index: 2; bottom: -2%; }
+    .fan .left { transform: translateX(-72%) rotate(-11deg); transform-origin: bottom center; }
+    .fan .right { transform: translateX(72%) rotate(11deg); transform-origin: bottom center; }
+
+    /* Keyword band */
+    .band { position: relative; z-index: 3; background: var(--green-dark); color: #fff; overflow: hidden; border-top: 4px solid var(--amber); }
+    .track { display: flex; width: max-content; animation: slide 38s linear infinite; }
+    .track span { display: inline-flex; align-items: center; gap: 22px; padding: 18px 22px; font-weight: 700; font-size: clamp(16px, 2.2vw, 22px); white-space: nowrap; }
+    .track span::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--amber); }
+    @keyframes slide { to { transform: translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .track { animation: none; } }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    .head { text-align: center; margin-bottom: 44px; }
+    h2 { font-size: clamp(28px, 4.6vw, 42px); line-height: 1.15; letter-spacing: -.025em; margin: 14px auto 12px; font-weight: 800; max-width: 18em; }
+    .sub { color: var(--muted); font-size: 17px; max-width: 38em; margin: 0 auto; }
+
+    /* Benefits */
+    .benefits { display: grid; gap: 20px; align-items: center; }
+    .benefits .phone { order: -1; justify-self: center; width: min(70vw, 280px); filter: drop-shadow(0 24px 40px rgba(17,24,39,.22)); }
+    .col { display: grid; gap: 20px; }
+    @media (min-width: 980px) {
+      .benefits { grid-template-columns: 1fr 300px 1fr; gap: 36px; }
+      .benefits .phone { order: 0; width: 100%; }
+    }
+    .card { background: var(--card); border-radius: 22px; padding: 26px; box-shadow: 0 1px 2px rgba(17,24,39,.04), 0 12px 32px -18px rgba(17,24,39,.18); }
+    .icon { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--green-dark); color: #fff; margin-bottom: 16px; }
+    .icon svg { width: 25px; height: 25px; }
+    .card h3 { margin: 0 0 6px; font-size: 19px; letter-spacing: -.01em; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    /* Path */
+    .path { background: var(--card); }
+    .rows { display: grid; gap: 56px; }
+    .row { display: grid; gap: 28px; align-items: center; }
+    .shot { position: relative; display: grid; place-items: center; background: var(--green-tint); border-radius: 28px; padding: 36px 0 0; overflow: hidden; }
+    .shot::before { content: ""; position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%; background: #CFEBDD; top: 18%; }
+    .shot img { position: relative; width: min(56%, 250px); margin-bottom: -18%; filter: drop-shadow(0 20px 34px rgba(11,74,43,.25)); }
+    .num { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--green-dark); color: #fff; font-weight: 800; font-size: 18px; }
+    .row h3 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -.02em; margin: 14px 0 10px; line-height: 1.2; }
+    .row p { margin: 0 0 16px; color: var(--muted); font-size: 16px; }
+    .ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .ticks li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+    .ticks li::before { content: ""; flex: none; width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; background: var(--green-tint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12 4 4 8-8'/%3E%3C/svg%3E") center / 13px no-repeat; }
+    @media (min-width: 860px) {
+      .row { grid-template-columns: 1fr 1fr; gap: 64px; }
+      .row.flip .shot { order: 2; }
+    }
+
+    /* Install */
+    .steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; counter-reset: s; }
+    @media (min-width: 640px) { .steps { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1000px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+    .steps li { counter-increment: s; background: var(--card); border-radius: 22px; padding: 24px; box-shadow: 0 1px 2px rgba(17,24,39,.04), 0 12px 32px -18px rgba(17,24,39,.18); }
+    .steps li::before { content: counter(s); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--amber); color: var(--ink); font-weight: 800; margin-bottom: 14px; }
+    .steps h3 { margin: 0 0 6px; font-size: 17px; }
+    .steps p { margin: 0; color: var(--muted); font-size: 15px; }
+    .note { margin-top: 20px; display: flex; gap: 12px; align-items: flex-start; background: var(--amber-tint); border-radius: 16px; padding: 16px 18px; font-size: 15px; }
+    .note svg { width: 22px; height: 22px; flex: none; color: #B26B00; margin-top: 1px; }
+
+    /* FAQ */
+    .faq { display: grid; gap: 12px; max-width: 780px; margin: 0 auto; }
+    details { background: var(--card); border-radius: 16px; padding: 18px 22px; box-shadow: 0 1px 2px rgba(17,24,39,.04); }
+    summary { cursor: pointer; font-weight: 600; font-size: 16px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; color: var(--green); font-weight: 700; font-size: 22px; line-height: 1; }
+    details[open] summary::after { content: "–"; }
+    details p { margin: 10px 0 0; color: var(--muted); font-size: 15px; }
+
+    /* Final CTA */
+    .final { position: relative; overflow: hidden; background: var(--green-dark); color: #fff; border-radius: 30px; padding: 48px 24px 0; display: grid; gap: 24px; align-items: end; }
+    .final h2 { color: #fff; margin: 0 0 12px; max-width: none; }
+    .final p { color: rgba(255,255,255,.82); margin: 0 0 24px; }
+    .final .copy { padding-bottom: 8px; text-align: center; }
+    .final .cta { justify-content: center; }
+    .final img { width: min(60%, 260px); justify-self: center; margin-bottom: -10%; filter: drop-shadow(0 20px 34px rgba(0,0,0,.3)); }
+    .final::before { content: ""; position: absolute; right: -120px; bottom: -160px; width: 420px; height: 420px; border-radius: 50%; background: rgba(245,166,35,.22); }
+    @media (min-width: 860px) {
+      .final { grid-template-columns: 1.2fr .8fr; padding: 56px 56px 0; }
+      .final .copy { text-align: left; padding-bottom: 56px; }
+      .final .cta { justify-content: flex-start; }
+    }
+
+    footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; }
+    .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); padding-top: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap bar">
+      <a class="brand" href="#top"><img src="/images/logo.png" alt="">RiceFlow</a>
+      <nav class="links">
+        <a href="#benefits">Benefits</a>
+        <a href="#how">How it works</a>
+        <a href="#install">Install</a>
+        <a href="#faq">Questions</a>
+      </nav>
+      <a class="btn btn-green btn-small" href="https://github.com/microxxd300/rice_flow_frontend_app/releases/latest/download/RiceFlow.apk">Download App</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div class="wrap">
+        <span class="pill">Free for Panabo City rice farmers</span>
+        <h1>Plant the right rice for your farm</h1>
+        <p class="lead">RiceFlow checks your farm, recommends rice varieties that fit it, and guides you step by step from seed to harvest, following DA-PhilRice PalayCheck.</p>
+        <div class="cta">
+          <a class="store" href="https://github.com/microxxd300/rice_flow_frontend_app/releases/latest/download/RiceFlow.apk">
+            <svg viewBox="0 0 24 24" fill="#3DDC84" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22A11.4 11.4 0 0 0 12 8.12c-1.8 0-3.5.38-4.92 1.02L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg>
+            <span><small>Download for</small><b>Android</b></span>
+          </a>
+          <a class="store light" href="#install">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0F5C35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <span><small>Not on Play Store yet</small><b>How to install</b></span>
+          </a>
+        </div>
+        <p class="fine">Free · Android 7.0 or newer · English, Filipino and Bisaya</p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <div class="sun"></div>
+        <div class="fan">
+          <img class="left" src="/images/phone-guide.webp" alt="" width="600" height="1230">
+          <img class="mid" src="/images/phone-home.webp" alt="" width="600" height="1230">
+          <img class="right" src="/images/phone-ai.webp" alt="" width="600" height="1230">
+        </div>
+      </div>
+    </div>
+
+    <div class="band" aria-hidden="true">
+      <div class="track">
+        <span>Farm Check</span><span>Rice Varieties</span><span>PalayCheck Guide</span><span>Yield Estimate</span><span>GeoRice AI</span><span>Problem Help</span>
+        <span>Farm Check</span><span>Rice Varieties</span><span>PalayCheck Guide</span><span>Yield Estimate</span><span>GeoRice AI</span><span>Problem Help</span>
+      </div>
+    </div>
+
+    <section id="benefits">
+      <div class="wrap">
+        <div class="head">
+          <span class="pill">Why RiceFlow</span>
+          <h2>Benefits of using RiceFlow</h2>
+          <p class="sub">Made for rice farmers in Panabo City, Davao del Norte, using DA-PhilRice guides and real harvest data from the province.</p>
+        </div>
+        <div class="benefits">
+          <div class="col">
+            <div class="card">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+              <h3>Check your farm</h3>
+              <p>Pin your farm on the map. RiceFlow checks the land, soil, rain and temperature for that spot.</p>
+            </div>
+            <div class="card">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22V9"/><path d="M12 9c0-3 2-5 5-6 0 3-2 5-5 6Z"/><path d="M12 13c0-3-2-5-5-6 0 3 2 5 5 6Z"/><path d="M12 17c0-2.5 1.7-4.2 4.5-5 0 2.5-1.7 4.2-4.5 5Z"/></svg></div>
+              <h3>Best rice varieties</h3>
+              <p>See which NSIC varieties fit your farm and the season, with the reasons why.</p>
+            </div>
+          </div>
+          <img class="phone" src="/images/phone-farm.webp" alt="RiceFlow farm map with the farm pinned in Panabo City" width="600" height="1230">
+          <div class="col">
+            <div class="card">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2Z"/><path d="M8 7h6"/><path d="M8 11h6"/><path d="m8 15 1.5 1.5L13 13"/></svg></div>
+              <h3>Step-by-step guide</h3>
+              <p>Follow the PalayCheck steps from seed to harvest. RiceFlow reminds you what to do and when.</p>
+            </div>
+            <div class="card">
+              <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></svg></div>
+              <h3>GeoRice AI</h3>
+              <p>Ask about your rice or a pest problem. Answers come from DA-PhilRice booklets and show the source page.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="path">
+      <div class="wrap">
+        <div class="head">
+          <span class="pill">How it works</span>
+          <h2>Your path to a better harvest</h2>
+          <p class="sub">From signing up to harvest day, RiceFlow walks with you through the season.</p>
+        </div>
+        <div class="rows">
+          <div class="row">
+            <div class="shot"><img src="/images/phone-welcome.webp" alt="RiceFlow welcome screen with language choice" width="600" height="1230"></div>
+            <div>
+              <span class="num">1</span>
+              <h3>Create your account</h3>
+              <p>Pick your language and sign up. It takes about a minute.</p>
+              <ul class="ticks"><li>English, Filipino or Bisaya</li><li>Your information stays private</li></ul>
+            </div>
+          </div>
+          <div class="row flip">
+            <div class="shot"><img src="/images/phone-farm.webp" alt="Farm map with the farm pinned" width="600" height="1230"></div>
+            <div>
+              <span class="num">2</span>
+              <h3>Pin your farm and get your varieties</h3>
+              <p>Put your farm on the map. RiceFlow checks it and shows the rice varieties that fit it best.</p>
+              <ul class="ticks"><li>Land, soil and weather for your spot</li><li>Expected yield for each variety</li></ul>
+            </div>
+          </div>
+          <div class="row">
+            <div class="shot"><img src="/images/phone-guide.webp" alt="Planting guide step from PalayCheck" width="600" height="1230"></div>
+            <div>
+              <span class="num">3</span>
+              <h3>Follow the planting guide</h3>
+              <p>Do each PalayCheck step and tap <strong>Log this step</strong> when you finish. Tap <strong>Explain this step</strong> if you need help.</p>
+              <ul class="ticks"><li>Reminders before each step</li><li>Help for pests and diseases</li></ul>
+            </div>
+          </div>
+          <div class="row flip">
+            <div class="shot"><img src="/images/phone-progress.webp" alt="Progress screen with crop stage and expected harvest" width="600" height="1230"></div>
+            <div>
+              <span class="num">4</span>
+              <h3>Track your crop to harvest</h3>
+              <p>See your crop's stage, the expected harvest date and your yield, season after season.</p>
+              <ul class="ticks"><li>Yield estimate from Davao del Norte harvest data</li><li>Your yield history</li></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <div class="wrap">
+        <div class="head">
+          <span class="pill">Install</span>
+          <h2>Install RiceFlow in 4 steps</h2>
+          <p class="sub">RiceFlow is not on the Play Store yet, so you install it from this website. It takes about 2 minutes.</p>
+        </div>
+        <ol class="steps">
+          <li><h3>Download</h3><p>Tap <strong>Download for Android</strong> on this page. If your phone asks, tap <strong>Download anyway</strong>.</p></li>
+          <li><h3>Open the file</h3><p>When it finishes, tap <strong>Open</strong>. You can also find <strong>RiceFlow.apk</strong> in your <strong>Downloads</strong> or <strong>Files</strong> app.</p></li>
+          <li><h3>Allow the install</h3><p>If you see <strong>"For your security…"</strong>, tap <strong>Settings</strong>, turn on <strong>Allow from this source</strong>, then go back.</p></li>
+          <li><h3>Install and sign up</h3><p>Tap <strong>Install</strong>, then <strong>Open</strong>. Create your account and add your farm.</p></li>
+        </ol>
+        <div class="note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20Z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+          <div>Only download RiceFlow from <strong>riceflow.me</strong>. If Google Play Protect shows a warning, tap <strong>More details → Install anyway</strong>. It shows this for apps that are not from the Play Store.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="path">
+      <div class="wrap">
+        <div class="head">
+          <span class="pill">Questions</span>
+          <h2>Good to know</h2>
+        </div>
+        <div class="faq">
+          <details><summary>Is RiceFlow free?</summary><p>Yes. RiceFlow is free to download and use.</p></details>
+          <details><summary>Which phones can use it?</summary><p>Android phones with Android 7.0 or newer. There is no iPhone version yet.</p></details>
+          <details><summary>Does it need internet?</summary><p>Yes. RiceFlow needs mobile data or Wi-Fi to check your farm, show the weather, save your logs and use GeoRice AI.</p></details>
+          <details><summary>Where does the advice come from?</summary><p>The planting guide follows DA-PhilRice PalayCheck. GeoRice AI answers from DA-PhilRice rice booklets and shows the source page. For serious problems, also talk to your City Agriculture Office.</p></details>
+          <details><summary>How do I update the app?</summary><p>Download it again from this page and install it. Your account and farm data stay saved.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="final">
+          <div class="copy">
+            <h2>Ready for this season?</h2>
+            <p>Download RiceFlow, pin your farm, and get the rice varieties that fit it.</p>
+            <div class="cta">
+              <a class="store" href="https://github.com/microxxd300/rice_flow_frontend_app/releases/latest/download/RiceFlow.apk">
+                <svg viewBox="0 0 24 24" fill="#3DDC84" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22A11.4 11.4 0 0 0 12 8.12c-1.8 0-3.5.38-4.92 1.02L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg>
+                <span><small>Download for</small><b>Android</b></span>
+              </a>
+            </div>
+          </div>
+          <img src="/images/phone-home.webp" alt="" width="600" height="1230">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <div>© 2026 RiceFlow · A capstone project of Davao del Norte State College (DNSC), Panabo City</div>
+      <div>Guides based on DA-PhilRice PalayCheck</div>
+    </div>
+  </footer>
+</body>
+</html>

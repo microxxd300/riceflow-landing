@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RiceFlow Booklet</title>
+  <link rel="icon" href="favicon.png">
+  <style>
+    :root { --ink: #111827; --muted: #4B5563; --line: #E5E7EB; --bg: #F1F2F1; --green: #059669; --card: #FFFFFF; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    header { padding: 16px; background: var(--card); border-bottom: 1px solid var(--line); }
+    h1 { margin: 0; font-size: 18px; line-height: 24px; }
+    .source { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--muted); }
+    .source a { color: var(--green); font-weight: 600; }
+    nav { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; background: var(--bg); }
+    button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--ink); color: #FFFFFF; font: inherit; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .35; cursor: default; }
+    #label { font-weight: 700; text-align: center; }
+    #cited { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 10px; }
+    #cited button { background: var(--card); color: var(--ink); border: 1px solid var(--line); min-height: 36px; }
+    #cited button.on { background: var(--green); border-color: var(--green); color: #FFFFFF; }
+    main { padding: 0 16px 32px; }
+    canvas { display: block; width: 100%; max-width: 900px; height: auto; margin: 0 auto; background: #FFFFFF; box-shadow: 0 2px 10px rgba(0, 0, 0, .12); }
+    #status { padding: 32px 16px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title">Booklet</h1>
+    <p class="source" id="source"></p>
+  </header>
+  <nav>
+    <button id="prev" type="button" aria-label="Previous page">Prev</button>
+    <div id="label" aria-live="polite"></div>
+    <button id="next" type="button" aria-label="Next page">Next</button>
+  </nav>
+  <div id="cited"></div>
+  <main>
+    <div id="status">Opening the page…</div>
+    <canvas id="page" hidden></canvas>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    // A booklet page the app links to: booklet.html?b=palaycheck&pages=18,22
+    // offset: PDF page = page number printed in the booklet + offset (front matter comes first).
+    var BOOKS = {
+      palaycheck: {
+        file: 'booklets/palaycheck-2022.pdf',
+        offset: 5,
+        title: 'PalayCheck System for Irrigated Lowland Rice (2022 revised edition)',
+        publisher: 'PhilRice',
+        original: 'https://www.philrice.gov.ph/wp-content/uploads/2023/02/PalayCheck-System-2022-Revised-Edition.pdf'
+      }
+    };
+
+    var params = new URLSearchParams(location.search);
+    var book = BOOKS[params.get('b')];
+    var statusEl = document.getElementById('status');
+    var canvas = document.getElementById('page');
+    var prev = document.getElementById('prev');
+    var next = document.getElementById('next');
+    var label = document.getElementById('label');
+    var cited = document.getElementById('cited');
+    var doc = null, printed = 1, rendering = false, queued = null;
+
+    function citedPages(text) {
+      var out = [];
+      (text || '').split(',').forEach(function (part) {
+        var range = part.trim().split('-').map(Number);
+        if (!range[0]) return;
+        var last = range[1] || range[0];
+        for (var p = range[0]; p <= last && out.length < 12; p++) out.push(p);
+      });
+      return out;
+    }
+
+    function fail(message) {
+      statusEl.hidden = false;
+      statusEl.textContent = message;
+      canvas.hidden = true;
+    }
+
+    function show(p) {
+      if (!doc) return;
+      var pdfPage = p + book.offset;
+      if (pdfPage < 1 || pdfPage > doc.numPages) return;
+      if (rendering) { queued = p; return; }
+      rendering = true;
+      printed = p;
+      label.textContent = 'Page ' + p;
+      prev.disabled = pdfPage <= 1;
+      next.disabled = pdfPage >= doc.numPages;
+      Array.prototype.forEach.call(cited.children, function (b) {
+        b.className = Number(b.dataset.page) === p ? 'on' : '';
+      });
+      doc.getPage(pdfPage).then(function (page) {
+        var width = Math.min(document.documentElement.clientWidth - 32, 900);
+        var base = page.getViewport({ scale: 1 });
+        var scale = (width / base.width) * Math.min(window.devicePixelRatio || 1, 2.5);
+        var viewport = page.getViewport({ scale: scale });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+      }).then(function () {
+        statusEl.hidden = true;
+        canvas.hidden = false;
+        window.scrollTo(0, 0);
+      }).catch(function () {
+        fail('This page could not be shown. Check your internet connection and try again.');
+      }).then(function () {
+        rendering = false;
+        if (queued !== null) { var q = queued; queued = null; show(q); }
+      });
+    }
+
+    if (!book) {
+      document.getElementById('title').textContent = 'Booklet not found';
+      prev.hidden = next.hidden = true;
+      fail('This booklet link is not valid.');
+    } else {
+      document.getElementById('title').textContent = book.title;
+      document.getElementById('source').innerHTML = 'Published by ' + book.publisher + '. ';
+      var link = document.createElement('a');
+      link.href = book.original;
+      link.textContent = 'Open the original';
+      document.getElementById('source').appendChild(link);
+
+      var pages = citedPages(params.get('pages'));
+      if (pages.length > 1) {
+        pages.forEach(function (p) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = 'p. ' + p;
+          b.dataset.page = p;
+          b.addEventListener('click', function () { show(p); });
+          cited.appendChild(b);
+        });
+      }
+      prev.addEventListener('click', function () { show(printed - 1); });
+      next.addEventListener('click', function () { show(printed + 1); });
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.getDocument(book.file).promise.then(function (loaded) {
+        doc = loaded;
+        show(pages[0] || 1);
+      }).catch(function () {
+        fail('The booklet could not be opened. Check your internet connection and try again.');
+      });
+    }
+  </script>
+</body>
+</html>
